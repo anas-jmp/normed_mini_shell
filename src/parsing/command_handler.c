@@ -30,8 +30,7 @@ int is_valid_identifier(const char *key)
  
 void handle_quoted_value(const char *input, int *i, char **key, char **value, char quote_char)
 {
-    printf("im a here \n");
-     (*i)++;
+      (*i)++;
     int value_start = *i;
     while (input[*i] && input[*i] != quote_char)
         (*i)++;
@@ -68,15 +67,7 @@ void handle_unquoted_value(const char *input, int *i, char **key, char **value)
      (*value)[*i - value_start] = '\0';
 }
 
-// static void clean_append_fail(t_append *app, char **key, char **value)
-// {
  
-//     *key = NULL;
-//     *value = NULL;
-//     app->existing = NULL;
-//     app->old_value = NULL;
-//     app->new_value = NULL;
-// }
 
 void handle_append(char **key, char **value)
 {
@@ -191,13 +182,19 @@ void parse_export_value(const char *input, char **key, char **value)
     if ((input[j] == '+' && input[j + 1] == '=') || input[j] == '=')
         handle_value_extraction(input, j, key, value);
 }
-
-void print_invalid_identifier(char *key)
+void print_invalid_identifier(const char *key)
 {
-    write(2, "minishell: export: `", 19);
-    write(2, key, strlen(key));
-    write(2, "`: not a valid identifier\n", 25);
+    if (!key)
+        printf(" ");
+    else
+    {
+        write(2, "minishell: export: `", 19);
+        write(2, key, strlen(key)); // strlen is safe here because key is not NULL.
+        write(2, "`: not a valid identifier\n", 25);
+    }
 }
+
+ 
 void handle_export_command(char *input)
 {
     char *key;
