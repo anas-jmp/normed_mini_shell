@@ -12,8 +12,6 @@ extern char **environ;
     char **my_env;
     // int count;
 
-    // count = count_environment_size(environ, NULL);
-    // my_env = malloc((count + 1) * sizeof(char *));
     my_env = malloc(sizeof(char *) * MENV);
     if (!my_env)
         return (NULL);
