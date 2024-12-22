@@ -2,34 +2,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
- 
 // Access the environment
 extern char **environ;
+ 
 
-static int count_environment_size(char **environ, t_env *env_list)
-{
-    int count;
-    t_env *current;
 
-    count = 0;
-    while (environ[count])
-        count++;
-    current = env_list;
-    while (current)
-    {
-        count++;
-        current = current->next;
-    }
-    return (count);
-}
-
-static char **copy_environ(char **environ, int *index)
+  char **copy_environ(char **environ, int *index)
 {
     char **my_env;
-    int count;
+    // int count;
 
-    count = count_environment_size(environ, NULL);
-    my_env = malloc((count + 1) * sizeof(char *));
+    // count = count_environment_size(environ, NULL);
+    // my_env = malloc((count + 1) * sizeof(char *));
+    my_env = malloc(sizeof(char *) * MENV);
     if (!my_env)
         return (NULL);
     *index = 0;
@@ -48,6 +33,7 @@ static char **copy_environ(char **environ, int *index)
     return (my_env);
 }
 /**************************************/
+
 static void free_env_array(char **env_array, int count)
 {
     int i;
@@ -110,17 +96,12 @@ char **handle_env(t_env *env_list)
 }
 
 
-
-
-
-
 void handle_unset(const char *key)
 {
     t_env *current = env_list;
     t_env *previous = NULL;
        
-        printf("\nok___unseting  2\n");
-
+ 
     while (current)
      {
         if (strcmp(current->key, key) == 0)
