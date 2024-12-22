@@ -19,55 +19,40 @@ int read_exit_status_from_file()
     return status;
 }
 
-
+void message(int fd, char *status_str,size_t len)
+{
+        if (write(fd, status_str, len) == -1)
+        perror("Error writing to file");
+    if (write(fd, "\n", 1) == -1)
+        perror("Error writing newline to file");
+}
 void write_exit_status_to_file(int status)
 {
-    FILE *file = fopen("exit_status.txt", "w");
-    if (file)
+    size_t len;
+    char *status_str;
+    int fd;
+
+    fd = open("exit_status.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
     {
-        fprintf(file, "%d\n", status); // Write the status to the file
-        fclose(file);
+        perror("Error opening file");
+        return;
     }
-    else
+     status_str  = ft_itoa(status);
+    if (!status_str)
     {
-        perror("Error writing exit status to file");
+        perror("Error allocating memory for status string");
+        close(fd);
+        return;
     }
+    len = 0;
+    while (status_str[len] != '\0')
+        len++;
+    message(fd,status_str,len);
+    free(status_str);
+    if (close(fd) == -1)
+        perror("Error closing file");
 }
-
-// void message(int fd, char *status_str,size_t len)
-// {
-//         if (write(fd, status_str, len) == -1)
-//         perror("Error writing to file");
-//     if (write(fd, "\n", 1) == -1)
-//         perror("Error writing newline to file");
-// }
-// void write_exit_status_to_file(int status)
-// {
-//     size_t len;
-//     char *status_str;
-//     int fd;
-
-//     fd = open("exit_status.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-//     if (fd == -1)
-//     {
-//         perror("Error opening file");
-//         return;
-//     }
-//      status_str  = ft_itoa(status);
-//     if (!status_str)
-//     {
-//         perror("Error allocating memory for status string");
-//         close(fd);
-//         return;
-//     }
-//     len = 0;
-//     while (status_str[len] != '\0')
-//         len++;
-//     message(fd,status_str,len);
-//     free(status_str);
-//     if (close(fd) == -1)
-//         perror("Error closing file");
-// }
 
 
  
