@@ -1,5 +1,6 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
+#define MENV 1000
 
 
 typedef struct s_command
