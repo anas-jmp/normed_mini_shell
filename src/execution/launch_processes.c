@@ -1,19 +1,34 @@
 #include "../../include/execution.h"
+ 
 
 
 void	execute_first_child_process(t_command *prompt, char **env, int **pipefd,
 		int i)
 {
+	t_shell_state shell_state;
+      shell_state.state = 0; 
+      shell_state.exit_status = 0;
+if (!strcmp(prompt->command, "exit"))
+  {
+     handle_exit(prompt->args, &shell_state);  
+  }
 	if (prompt->command && strcmp(prompt->command,"export"))
 	{
 		prompt->cmd_path = is_command(prompt->command, env);
 		first_child_processe(prompt, env, pipefd, i);
 	}
+ 
 }
 
 void	execute_middle_child_process(t_command *prompt, char **env,
 		int **pipefd, int i)
 {
+	    t_shell_state shell_state;
+      shell_state.state = 0; 
+      shell_state.exit_status = 0;
+  if (!strcmp(prompt->command, "exit")) {
+     handle_exit(prompt->args, &shell_state);  
+  }
 	if (prompt->command && strcmp(prompt->command,"export" ) )
 	{
 		prompt->cmd_path = is_command(prompt->command, env);
@@ -25,6 +40,12 @@ void	execute_middle_child_process(t_command *prompt, char **env,
 void	execute_ending_child_process(t_command *prompt, char **env,
 		int **pipefd, int i)
 {
+	  t_shell_state shell_state;
+      shell_state.state = 0; 
+      shell_state.exit_status = 0;
+  if (!strcmp(prompt->command, "exit")) {
+     handle_exit(prompt->args, &shell_state);  
+  }
 	if (prompt->command && strcmp(prompt->command,"export"))
 	{
 		prompt->cmd_path = is_command(prompt->command, env);
@@ -63,5 +84,3 @@ void	exec_one_process(t_command *prompt, char **env)
 	}
 	wait(NULL);
 }
-
-
