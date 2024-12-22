@@ -85,203 +85,100 @@ int	pipex(t_command *prompt, char **env)
 }
 
  
-void printing2(t_shell_state *shell_state)
+void initialize_shell(t_shell_state *shell_state)
 {
-   printf(">>> %d<<<\n",shell_state->state);
-   if(shell_state->exit_status==130)
-   {
-      printf("\nfrom p 2\n");
-           // store_env_variable("?","1300");
-           //write_exit_status_to_file(0);
-          // shell_state->state=0;
-   }
-   printf(">>> %d<<<\n",shell_state->exit_status);
-
+    shell_state->state = 0;
+    signals(shell_state);
 }
+
+char *prompt_user(t_shell_state *shell_state)
+{
+    shell_state->exit_status = read_exit_status_from_file();
+    store_env_variable("?", ft_itoa(shell_state->exit_status));
+    write_exit_status_to_file(0);
+    if (shell_state->exit_status == 0)
+        store_env_variable("?", "0");
+
+    return readline("\x1B[31mMini_shell\x1B[33m(*-_-*)\x1B[32m>\x1B[37m");
+}
+
  
 
-int main(int argc, char **argv, char **env)
+
+int process_input(char *input, t_shell_state *shell_state, char **env)
 {
-     char *input = NULL;
     token *tokens = NULL;
     t_command *cmd_list = NULL;
+    int has_pipe = 0;
 
-       t_shell_state shell_state;
-    
-      shell_state.state = 0; 
-     (void)argc;
-     (void)argv;
-   signals(&shell_state);
-   while (1)
+    char unmatched = check_unmatched_quotes(input);
+    if (unmatched)
     {
-          shell_state.exit_status = 0;
-          shell_state.exit_status = read_exit_status_from_file(); // Replace global variable
-          store_env_variable("?", ft_itoa(shell_state.exit_status));
-          write_exit_status_to_file(0);
-        if(shell_state.exit_status==0)
-        {
-                  store_env_variable("?", "0"); 
-        }
-        input = readline("\x1B[31mMini_shell\x1B[33m(*-_-*)\x1B[32m>\x1B[37m"); // Prompt for input
-        if (!input) 
-        {  
-            printf("exit\n");
-            break;
-        }
-        char unmatched = check_unmatched_quotes(input);
-        if (unmatched) {
-            printf("syntax error: unmatched %c\n", unmatched);
-            free(input);
-            continue;
-        }
-        tokens = tokenize_input(input, env);
-        cmd_list = parse_command(tokens);
-
-        if (validate_syntax(tokens) == -1)
-        {
-            free(input);
-            continue;
-        }
-      if(cmd_list && cmd_list->command)
-          {
-            if (cmd_list && strcmp(cmd_list->command, "exit") == 0)
-            {
-                handle_exit(cmd_list->args, &shell_state); // Pass the shell_state struct
-                printf("\nExit status is: %d\n", shell_state.exit_status);
-                break;
-            }
-          }
-        pipex(cmd_list, env);
+        printf("syntax error: unmatched %c\n", unmatched);
         free(input);
-        input = NULL;
+        return -1;
     }
+    tokens = tokenize_input(input, env);
+    if (validate_syntax(tokens) == -1)
+    {
+        free(input);
+        return -1;
+    }
+    cmd_list = parse_command(tokens);
+     t_command *temp = cmd_list;
+    while (temp && temp->next)
+    {
+        has_pipe = 1;
+        temp = temp->next;
+    }
+    if (!has_pipe && cmd_list && cmd_list->command && 
+        strcmp(cmd_list->command, "exit") == 0)
+    {
+        handle_exit(cmd_list->args, shell_state);
+        printf("(exit)\n");
+        printf("Exit status is: %d\n", shell_state->exit_status);
+        free(input);
+        return -2;  // Special return for exit
+    }
+    pipex(cmd_list, env);
     return 0;
 }
 
+int main(int argc, char **argv, char **env)
+{
+    char *input;
+    t_shell_state shell_state;
+    int ret;
 
+    input = NULL;
+    shell_state.state = 0;
+    (void)argc;
+    (void)argv;
+    initialize_shell(&shell_state);
+    if (read_history(".minishell_history") != 0)
+        write(2, "Warning: Could not load history file\n", 36);
 
-// void initialize_shell(t_shell_state *shell_state)
-// {
-//     shell_state->state = 0;
-//     signals(shell_state);
-// }
-
-// char *prompt_user(t_shell_state *shell_state)
-// {
-//     shell_state->exit_status = read_exit_status_from_file();
-//     store_env_variable("?", ft_itoa(shell_state->exit_status));
-//     write_exit_status_to_file(0);
-//     if (shell_state->exit_status == 0)
-//         store_env_variable("?", "0");
-
-//     return readline("\x1B[31mMini_shell\x1B[33m(*-_-*)\x1B[32m>\x1B[37m");
-// }
-
-// int process_input(char *input, t_shell_state *shell_state, char **env)
-// {
-//     token *tokens = NULL;
-//     t_command *cmd_list = NULL;
-
-//     char unmatched = check_unmatched_quotes(input);
-//     if (unmatched)
-//     {
-//         printf("syntax error: unmatched %c\n", unmatched);
-//         free(input);
-//         return -1;
-//     }
-//     tokens = tokenize_input(input, env);
-//     if (validate_syntax(tokens) == -1)
-//     {
-//         free(input);
-//         return -1;
-//     }
-//     cmd_list = parse_command(tokens);
-//     if (cmd_list && cmd_list->command && strcmp(cmd_list->command, "exit") == 0)
-//     {
-//         handle_exit(cmd_list->args, shell_state);
-//         printf("\nExit status is: %d\n", shell_state->exit_status);
-//         free(input);
-//         return -1;
-//     }
-//     pipex(cmd_list, env);
-//     return 0;
-// }
-
- 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <unistd.h>
-// #include <readline/readline.h>
-// #include <readline/history.h> // Required for history functions
-
-// int main(int argc, char **argv, char **env)
-// {
-//     char *input = NULL;
-//     t_shell_state shell_state = {0};
-//     (void)argc;
-//     (void)argv;
-
-//     // Step 1: Initialize shell
-//     initialize_shell(&shell_state);
-
-//     // Step 2: Load history
-//     if (read_history(".minishell_history") != 0) {
-//         fprintf(stderr, "Warning: Could not load history file\n");
-//     }
-
-//     // Step 3: Main loop
-//     while (1)
-//     {
-//         // Show prompt and get user input
-//         input = prompt_user(&shell_state);
-//         if (!input)
-//             break;
-
-//         // Add non-empty input to history
-//         if (*input != '\0') {
-//             add_history(input); // Save command to history in memory
-//         }
-
-//         // Process input
-//         if (process_input(input, &shell_state, env) == -1) {
-//             free(input);
-//             continue;
-//         }
-
-//         free(input);
-//         input = NULL;
-//     }
-
-//     // Step 4: Save history before exiting
-//     if (write_history(".minishell_history") != 0) {
-//         fprintf(stderr, "Warning: Could not save history file\n");
-//     }
-
-//    // cleanup_shell(&shell_state); // Free resources
-//     return 0;
-// }
-
-
-
-// int main(int argc, char **argv, char **env)
-// {
-//     char *input = NULL;
-//     t_shell_state shell_state = {0};
-//     (void)argc;
-//     (void)argv;
-
-//      initialize_shell(&shell_state);
-//     while (1)
-//     {
-//         input = prompt_user(&shell_state);
-//         if (!input)
-//             break;
-
-//         if (process_input(input, &shell_state, env) == -1)
-//             continue;
-
-//         free(input);
-//         input = NULL;
-//     }
-//      return 0;
-// }
+    while (1)
+    {
+        input = prompt_user(&shell_state);
+        if (!input)
+            break;
+        if (*input != '\0')
+            add_history(input);
+        
+        ret = process_input(input, &shell_state, env);
+        if (ret == -2)  // Exit command
+        {
+            if (write_history(".minishell_history") != 0)
+                write(2, "Warning: Could not save history file\n", 36);
+            return (shell_state.exit_status);
+        }
+        if (ret == -1)
+            continue;
+        free(input);
+        input = NULL;
+    }
+    if (write_history(".minishell_history") != 0)
+        write(2, "Warning: Could not save history file\n", 36);
+    return (0);
+}
