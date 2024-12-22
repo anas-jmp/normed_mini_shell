@@ -1,22 +1,33 @@
 #include "../../include/minishell.h"
 #include "../../include/execution.h"
  
-int read_exit_status_from_file()
+int read_exit_status_from_file(void)
 {
-    FILE *file = fopen("exit_status.txt", "r");
-    int status = 0; // Default value for status
-    if (file)
+    int fd;
+    int status;
+    char buffer[12];  
+    int bytes_read;
+    int i;
+
+    status = 0;   
+    fd = open(".exit_status", O_RDONLY);
+    if (fd >= 0)
     {
-        fscanf(file, "%d", &status); // Read the status from the file
-        fclose(file);
+        bytes_read = read(fd, buffer, sizeof(buffer) - 1);
+        if (bytes_read > 0)
+        {
+            buffer[bytes_read] = '\0';
+            status = 0;
+            i = 0;
+            while (buffer[i] && buffer[i] >= '0' && buffer[i] <= '9')
+            {
+                status = status * 10 + (buffer[i] - '0');
+                i++;
+            }
+        }
+        close(fd);
     }
-    
-    else
-    {
-        // If the file doesn't exist, it means it's the first run, or the file was deleted.
-        status = 0; // Default value
-    }
-    return status;
+    return (status);
 }
 
 void message(int fd, char *status_str,size_t len)
@@ -32,7 +43,7 @@ void write_exit_status_to_file(int status)
     char *status_str;
     int fd;
 
-    fd = open("exit_status.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(".exit_status", O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
     {
         perror("Error opening file");
