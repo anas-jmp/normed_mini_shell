@@ -168,8 +168,7 @@ int main(int argc, char **argv, char **env)
         ret = process_input(input, &shell_state, env);
         if (ret == -2)  // Exit command
         {
-            if (write_history(".minishell_history") != 0)
-                write(2, "Warning: Could not save history file\n", 36);
+            write_history(".minishell_history");
             return (shell_state.exit_status);
         }
         if (ret == -1)
@@ -177,7 +176,6 @@ int main(int argc, char **argv, char **env)
         free(input);
         input = NULL;
     }
-    if (write_history(".minishell_history") != 0)
-        write(2, "Warning: Could not save history file\n", 36);
+    write_history(".minishell_history");
     return (0);
 }
