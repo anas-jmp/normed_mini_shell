@@ -155,8 +155,7 @@ int main(int argc, char **argv, char **env)
     (void)argc;
     (void)argv;
     initialize_shell(&shell_state);
-    if (read_history(".minishell_history") != 0)
-        write(2, "Warning: Could not load history file\n", 36);
+    
 
     while (1)
     {
