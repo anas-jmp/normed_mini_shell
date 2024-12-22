@@ -8,6 +8,12 @@ void	execute_first_child_process(t_command *prompt, char **env, int **pipefd,
 	t_shell_state shell_state;
       shell_state.state = 0; 
       shell_state.exit_status = 0;
+
+        if (!strcmp(prompt->command, "export") || !strcmp(prompt->command, "unset") || !strcmp(prompt->command, "exit")  ) 
+        {
+             return;
+        }
+
 if (!strcmp(prompt->command, "exit"))
   {
      handle_exit(prompt->args, &shell_state);  
@@ -26,6 +32,12 @@ void	execute_middle_child_process(t_command *prompt, char **env,
 	    t_shell_state shell_state;
       shell_state.state = 0; 
       shell_state.exit_status = 0;
+
+        if (!strcmp(prompt->command, "export") || !strcmp(prompt->command, "unset") || !strcmp(prompt->command, "exit")  ) 
+        {
+             return;
+        }
+
   if (!strcmp(prompt->command, "exit")) {
      handle_exit(prompt->args, &shell_state);  
   }
@@ -43,6 +55,12 @@ void	execute_ending_child_process(t_command *prompt, char **env,
 	  t_shell_state shell_state;
       shell_state.state = 0; 
       shell_state.exit_status = 0;
+
+           if (!strcmp(prompt->command, "export") || !strcmp(prompt->command, "unset") || !strcmp(prompt->command, "exit")  ) 
+        {
+             return;
+        }
+
   if (!strcmp(prompt->command, "exit")) {
      handle_exit(prompt->args, &shell_state);  
   }
@@ -56,12 +74,18 @@ void	execute_ending_child_process(t_command *prompt, char **env,
 }
 
 
+
+
+
+
 void	exec_one_process(t_command *prompt, char **env)
 {
 	pid_t	pid;
 	char	*cmd_path;
 	int		fd_in_out[2];
 
+        if (!strcmp(prompt->command, "export") || !strcmp(prompt->command, "unset") || !strcmp(prompt->command, "exit")  ) 
+             return;
 	fd_in_out[0] = STDIN_FILENO;
 	fd_in_out[1] = STDOUT_FILENO;
 	if (!prompt->command)
@@ -84,3 +108,4 @@ void	exec_one_process(t_command *prompt, char **env)
 	}
 	wait(NULL);
 }
+
